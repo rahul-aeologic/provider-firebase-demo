@@ -3,8 +3,6 @@ import 'package:firebase_demo_project/models/chats/chat.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'models/user.dart';
-
 class ChatRoom extends StatelessWidget {
   String name;
   String imageUrl;

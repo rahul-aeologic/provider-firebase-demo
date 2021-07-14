@@ -1,28 +1,34 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_demo_project/chat_room.dart';
-import 'package:firebase_demo_project/login/login_page.dart';
 import 'package:firebase_demo_project/models/chats/chat.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'models/user.dart';
 
 void main() {
-  runApp(MyApp());
-
+  runApp(HomePage());
 }
 
-class MyApp extends StatelessWidget {
+class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Firebase-Provider Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: LoginForm(),
+    return MultiProvider(
+      providers: [
+        StreamProvider<List<User>>(
+            create: (_) => streamOfUsers(), initialData: []),
+        StreamProvider<List<Chat>>(
+            create: (_) => ChatRoom().streamOfChats(), initialData: []),
+      ],
+      child: MyHomePage(),
     );
+  }
+
+  Stream<List<User>> streamOfUsers() {
+    var ref = Firestore.instance.collection('users');
+    return ref.snapshots().map((list) =>
+        list.documents.map((doc) => User.fromFirestore(doc)).toList());
   }
 }
 
@@ -35,6 +41,32 @@ class MyHomePage extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(
           title: Text("Firebase-Provider Demo"),
+          automaticallyImplyLeading: false,
+          actions: <Widget>[
+            Padding(
+                padding: EdgeInsets.only(right: 20.0),
+                child: GestureDetector(
+                  onTap: () async {
+                    Navigator.of(context).pop(context);
+                    SharedPreferences pref =
+                        await SharedPreferences.getInstance();
+                    pref.clear();
+                  },
+                  child: Row(
+                    children: [
+                      Text(
+                        'Log Out ',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      Icon(
+                        Icons.logout,
+                        size: 26.0,
+                      ),
+                    ],
+                  ),
+                )),
+          ],
         ),
         body: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -90,6 +122,8 @@ class _UserChatListState extends State<UserChatList> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        // Navigator.of(context).push(MaterialPageRoute(builder: (context) => ChatRoom(
+        //     name: widget.name, imageUrl: widget.imageUrl, id: widget.id),));
         Navigator.push(
           context,
           MaterialPageRoute(
