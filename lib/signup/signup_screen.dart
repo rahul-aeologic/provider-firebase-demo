@@ -1,13 +1,12 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_demo_project/homepage.dart';
-import 'package:firebase_demo_project/signup/signup_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class LoginForm extends StatefulWidget {
+class SignupScreen extends StatefulWidget {
   @override
-  _LoginFormState createState() => _LoginFormState();
+  _SignupScreenState createState() => _SignupScreenState();
 }
 
 void _setUserEmail(String useremail) async {
@@ -16,24 +15,32 @@ void _setUserEmail(String useremail) async {
 }
 
 // ignore: camel_case_types
-class _LoginFormState extends State<LoginForm> {
+class _SignupScreenState extends State<SignupScreen> {
   bool active = false;
 
   //FlutterOtp otp = FlutterOtp();
-  TextEditingController username = TextEditingController();
-  TextEditingController password = TextEditingController();
+  TextEditingController usernameController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  TextEditingController confirmPasswordController = TextEditingController();
+  TextEditingController nameController = TextEditingController();
   FocusNode userFocus = FocusNode();
   FocusNode passwordFocus = FocusNode();
+  FocusNode nameFocus = FocusNode();
+  FocusNode confirmPassFocus = FocusNode();
   bool isHidden = true;
   final _formkey = GlobalKey<FormState>();
 
   @override
   void dispose() {
     super.dispose();
-    username.dispose();
-    password.dispose();
+    usernameController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    nameController.dispose();
     userFocus.dispose();
     passwordFocus.dispose();
+    nameFocus.dispose();
+    confirmPassFocus.dispose();
   }
 
   @override
@@ -77,11 +84,34 @@ class _LoginFormState extends State<LoginForm> {
                         ),
                         Container(
                           child: SizedBox(
-                            height: 275.0,
+                            height: 150.0,
                             child: Image.asset(
                               'assets/chaticon.png',
+                              height: 100,
+                              width: 100,
                             ),
                           ),
+                        ),
+                        SizedBox(height: 10.0),
+                        TextFormField(
+                          focusNode: nameFocus,
+                          textInputAction: TextInputAction.next,
+                          onFieldSubmitted: (val) {
+                            nameFocus.unfocus();
+                            FocusScope.of(context).requestFocus(userFocus);
+                          },
+                          style: TextStyle(fontSize: 18.0, color: Colors.black),
+                          decoration: InputDecoration(
+                            prefixIcon: Icon(
+                              Icons.person,
+                              color: Colors.black,
+                            ),
+                            contentPadding: EdgeInsets.all(15.0),
+                            labelText: 'Name',
+                            labelStyle:
+                                TextStyle(color: Colors.black, fontSize: 18.0),
+                          ),
+                          controller: nameController,
                         ),
                         SizedBox(height: 10.0),
                         TextFormField(
@@ -95,7 +125,7 @@ class _LoginFormState extends State<LoginForm> {
                               !EmailValidator.validate(value, true)
                                   ? 'Not a valid email.'
                                   : null,
-                          onSaved: (value) => username.text = value,
+                          onSaved: (value) => usernameController.text = value,
                           style: TextStyle(fontSize: 18.0, color: Colors.black),
                           obscureText: false,
                           decoration: InputDecoration(
@@ -108,18 +138,20 @@ class _LoginFormState extends State<LoginForm> {
                             labelStyle:
                                 TextStyle(color: Colors.black, fontSize: 18.0),
                           ),
-                          controller: username,
+                          controller: usernameController,
                         ),
                         SizedBox(height: 10.0),
                         TextFormField(
                           onFieldSubmitted: (val) {
                             passwordFocus.unfocus();
+                            FocusScope.of(context)
+                                .requestFocus(confirmPassFocus);
                           },
                           focusNode: passwordFocus,
                           textInputAction: TextInputAction.done,
                           style: TextStyle(fontSize: 18.0, color: Colors.black),
                           obscureText: isHidden,
-                          controller: password,
+                          controller: passwordController,
                           decoration: InputDecoration(
                             prefixIcon: Icon(
                               Icons.security,
@@ -130,7 +162,7 @@ class _LoginFormState extends State<LoginForm> {
                                 Icons.visibility,
                                 color: Colors.black,
                               ),
-                              onTap: password_view,
+                              onTap: _passwordView,
                             ),
                             contentPadding:
                                 EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
@@ -139,75 +171,27 @@ class _LoginFormState extends State<LoginForm> {
                           ),
                         ),
                         SizedBox(height: 5.0),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            InkWell(
-                              onTap: () {
-                                print("Forget Password btn clicked");
-                              },
-                              child: SizedBox(
-                                height: 30,
-                                child: Text(
-                                  'Forget Password',
-                                  style: TextStyle(
-                                      color: Colors.black, fontSize: 16.0),
-                                ),
-                              ),
+                        TextFormField(
+                          onFieldSubmitted: (val) {
+                            confirmPassFocus.unfocus();
+                          },
+                          focusNode: confirmPassFocus,
+                          textInputAction: TextInputAction.done,
+                          style: TextStyle(fontSize: 18.0, color: Colors.black),
+                          obscureText: true,
+                          controller: confirmPasswordController,
+                          decoration: InputDecoration(
+                            prefixIcon: Icon(
+                              Icons.security,
+                              color: Colors.black,
                             ),
-                          ],
-                        ),
-                        SizedBox(
-                          height: 10.0,
-                        ),
-                        Material(
-                          elevation: 5.0,
-                          borderRadius: BorderRadius.circular(30.0),
-                          color: Colors.blue,
-                          child: MaterialButton(
-                            padding:
-                                EdgeInsets.fromLTRB(90.0, 15.0, 90.0, 15.0),
-                            onPressed: () async {
-                              if (_formkey.currentState.validate()) {}
-                              if (username.text == '' || password.text == '') {
-                                final snackBar = SnackBar(
-                                  content: Text(
-                                      'Please Enter username & Password..!'),
-                                  action: SnackBarAction(
-                                    label: 'warning',
-                                    onPressed: () {},
-                                  ),
-                                );
-
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(snackBar);
-                              } else {
-                                setState(() => active = true);
-                                await _handleSignIn();
-                                setState(() => active = false);
-                              }
-                            },
-                            child: Text(
-                              'Log In',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18.0),
-                            ),
+                            contentPadding:
+                                EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+                            labelText: 'Confirm Password',
+                            labelStyle: TextStyle(color: Colors.black),
                           ),
                         ),
-                        SizedBox(
-                          height: 10,
-                        ),
-                        Text(
-                          'or',
-                          style: TextStyle(
-                              fontSize: 20.0,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black),
-                        ),
-                        SizedBox(height: 10),
+                        SizedBox(height: 40),
                         Material(
                           elevation: 5.0,
                           borderRadius: BorderRadius.circular(30.0),
@@ -215,17 +199,38 @@ class _LoginFormState extends State<LoginForm> {
                           child: MaterialButton(
                             padding:
                                 EdgeInsets.fromLTRB(60.0, 15.0, 60.0, 15.0),
-                            onPressed: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => SignupScreen()));
-                              //
-                              // final snackBar = SnackBar(
-                              //   content: Text('Sign up module under maintenance..!'),
-                              //   action: SnackBarAction(
-                              //     label: '',
-                              //     onPressed: () {},
-                              //   ),
-                              // );
+                            onPressed: () async {
+                              if (_formkey.currentState.validate()) {}
+                              if (usernameController.text == '' ||
+                                  passwordController.text == '' ||
+                                  nameController.text == '' ||
+                                  confirmPasswordController.text == '') {
+                                final snackBar = SnackBar(
+                                  content: Text('Required all field..!'),
+                                  action: SnackBarAction(
+                                    label: 'warning',
+                                    onPressed: () {},
+                                  ),
+                                );
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(snackBar);
+                              }
+                              if (passwordController.text ==
+                                  confirmPasswordController.text) {
+                                setState(() => active = true);
+                                await _handleSignUp();
+                                setState(() => active = false);
+                              } else {
+                                final snackBar = SnackBar(
+                                  content: Text('Password Not Matched..!'),
+                                  action: SnackBarAction(
+                                    label: 'warning',
+                                    onPressed: () {},
+                                  ),
+                                );
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(snackBar);
+                              }
                             },
                             child: Text(
                               'Sign up',
@@ -246,8 +251,7 @@ class _LoginFormState extends State<LoginForm> {
     );
   }
 
-  // ignore: non_constant_identifier_names
-  void password_view() {
+  void _passwordView() {
     setState(() {
       if (isHidden == true) {
         isHidden = false;
@@ -257,43 +261,32 @@ class _LoginFormState extends State<LoginForm> {
     });
   }
 
-  _handleSignIn() async {
+  _handleSignUp() async {
     try {
       final FirebaseUser user =
-          (await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: username.text,
-        password: password.text,
+          (await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: usernameController.text,
+        password: passwordController.text,
       ))
               .user;
 
       if (user != null) {
+        Navigator.of(context).pop();
         Navigator.of(context)
             .push(MaterialPageRoute(builder: (context) => HomePage()));
-        String email = username.text;
+        String email = usernameController.text;
         print(user.email);
-        print('Log In Successfully......');
+        print('User Registered Successfully......');
         _setUserEmail(email);
       }
     } catch (e) {
       print(e.toString());
-      //setState(() => active = false);
+      setState(() => active = false);
       switch (e.code) {
-        case "ERROR_WRONG_PASSWORD":
+        case "ERROR_EMAIL_ALREADY_IN_USE":
           {
             final snackBar = SnackBar(
-              content: Text('password was Incorrect..!'),
-              action: SnackBarAction(
-                label: 'error',
-                onPressed: () {},
-              ),
-            );
-            ScaffoldMessenger.of(context).showSnackBar(snackBar);
-          }
-          break;
-        case "ERROR_USER_NOT_FOUND ":
-          {
-            final snackBar = SnackBar(
-              content: Text('E-mail was Incorrect..!'),
+              content: Text('E-mail is already in use..!'),
               action: SnackBarAction(
                 label: 'error',
                 onPressed: () {},
@@ -305,31 +298,4 @@ class _LoginFormState extends State<LoginForm> {
       }
     }
   }
-
-  // void emailVerification() {
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         backgroundColor: Colors.white.withOpacity(0.9),
-  //         title: Text(
-  //           'Error',
-  //           style: TextStyle(color: Colors.black),
-  //         ),
-  //         content: Text(
-  //           "Account Not exist ! \n Or \n Not Verify: Please verify first",
-  //           style: TextStyle(fontSize: 18.0, color: Colors.black),
-  //         ),
-  //         actions: [
-  //           TextButton(
-  //             onPressed: () async {
-  //               Navigator.of(context).pop();
-  //             },
-  //             child: Text('Close'),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
 }

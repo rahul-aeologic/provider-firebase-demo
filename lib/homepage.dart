@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dash_chat/dash_chat.dart';
 import 'package:firebase_demo_project/chat_room.dart';
 import 'package:firebase_demo_project/models/chats/chat.dart';
 import 'package:flutter/material.dart';
@@ -32,8 +33,27 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
   TextEditingController _textFieldController = TextEditingController();
+  String username;
+
+  _getUserName() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    username = pref.getString('userEmail');
+  }
+
+  @override
+  void initState() {
+    _getUserName();
+    // TODO: implement initState
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     final users = Provider.of<List<User>>(context);
@@ -45,26 +65,38 @@ class MyHomePage extends StatelessWidget {
           actions: <Widget>[
             Padding(
                 padding: EdgeInsets.only(right: 20.0),
-                child: GestureDetector(
-                  onTap: () async {
-                    Navigator.of(context).pop(context);
-                    SharedPreferences pref =
-                        await SharedPreferences.getInstance();
-                    pref.clear();
-                  },
-                  child: Row(
-                    children: [
-                      Text(
-                        'Log Out ',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      Icon(
-                        Icons.logout,
-                        size: 26.0,
-                      ),
-                    ],
-                  ),
+                child: Row(
+                  children: [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          toBeginningOfSentenceCase(
+                              username.substring(0, username.indexOf('@'))),
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        GestureDetector(
+                          onTap: () async {
+                            Navigator.of(context).pop(context);
+                            SharedPreferences pref =
+                                await SharedPreferences.getInstance();
+                            pref.clear();
+                          },
+                          child: Row(
+                            children: [
+                              Text(
+                                'Log Out ',
+                              ),
+                              Icon(
+                                Icons.logout,
+                                // size: 26.0,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 )),
           ],
         ),
